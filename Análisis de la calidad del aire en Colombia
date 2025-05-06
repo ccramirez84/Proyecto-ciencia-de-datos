@@ -1,0 +1,82 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# --- 1. Obtención y Carga de Datos ---
+# Intenta leer el archivo CSV que contiene los datos de calidad del aire.
+# Reemplaza 'ruta/al/archivo.csv' con la ubicación real de tu archivo.
+try:
+    df = pd.read_csv('ruta/al/archivo.csv')
+except FileNotFoundError:
+    print("Error: No se encontró el archivo de datos en la ruta especificada.")
+    exit()
+
+# --- 2. Exploración Inicial del DataFrame ---
+# Muestra las primeras 5 filas del DataFrame para tener una idea del contenido.
+print("Primeras filas del DataFrame:\n", df.head())
+# Proporciona un resumen conciso del DataFrame, incluyendo tipos de datos y valores no nulos.
+print("\nInformación general del DataFrame:\n", df.info())
+# Genera estadísticas descriptivas de las columnas numéricas (conteo, media, desviación estándar, etc.).
+print("\nEstadísticas descriptivas de las columnas numéricas:\n", df.describe())
+# Muestra los valores únicos presentes en la columna 'parametro' (los diferentes contaminantes medidos).
+print("\nValores únicos en la columna 'parametro':\n", df['parametro'].unique())
+# Muestra los valores únicos presentes en la columna 'estacion' (las diferentes estaciones de monitoreo).
+print("\nValores únicos en la columna 'estacion':\n", df['estacion'].unique())
+
+# --- 3. Limpieza y Preparación de Datos ---
+# Convierte la columna 'fecha_hora' al tipo datetime para facilitar el análisis temporal.
+df['fecha_hora'] = pd.to_datetime(df['fecha_hora'])
+# Identifica y muestra el número de valores faltantes (NaN) en cada columna del DataFrame.
+print("\nNúmero de valores faltantes por columna:\n", df.isnull().sum())
+# --- Decisión sobre el manejo de valores faltantes ---
+# Aquí podrías implementar estrategias como eliminar filas con NaN (df = df.dropna())
+# o imputar valores faltantes usando la media, mediana u otro método (df['columna'].fillna(df['columna'].mean(), inplace=True)).
+# ¡Ten cuidado al eliminar datos, considera el impacto en tu análisis!
+
+# --- 4. Análisis Exploratorio de Datos (EDA) - Visualizaciones Básicas ---
+# --- Ejemplo 1: Distribución de un contaminante (PM2.5) ---
+# Filtra el DataFrame para trabajar solo con las mediciones del contaminante 'PM2.5'.
+df_pm25 = df[df['parametro'] == 'PM2.5'].copy()
+# Crea una figura y un conjunto de ejes para el gráfico.
+plt.figure(figsize=(10, 6))
+# Genera un histograma de la columna 'valor' (concentración de PM2.5),
+# con una estimación de densidad del kernel (KDE) superpuesta para visualizar la distribución.
+sns.histplot(df_pm25['valor'], kde=True)
+# Establece el título del gráfico.
+plt.title('Distribución de PM2.5')
+# Etiqueta el eje x.
+plt.xlabel('Concentración (µg/m³)')
+# Etiqueta el eje y.
+plt.ylabel('Frecuencia')
+# Muestra el gráfico.
+plt.show()
+
+# --- Ejemplo 2: Serie de tiempo de un contaminante (PM2.5) en una estación ---
+# Selecciona la primera estación única de la columna 'estacion' como ejemplo.
+estacion_ejemplo = df_pm25['estacion'].iloc[0]
+# Filtra el DataFrame para obtener solo los datos de la estación de ejemplo
+# y establece la columna 'fecha_hora' como índice para facilitar la visualización de series de tiempo.
+df_estacion = df_pm25[df_pm25['estacion'] == estacion_ejemplo].set_index('fecha_hora')
+# Crea una figura para el gráfico.
+plt.figure(figsize=(15, 6))
+# Plotea la columna 'valor' (concentración de PM2.5) a lo largo del tiempo (índice 'fecha_hora').
+plt.plot(df_estacion['valor'])
+# Establece el título del gráfico, incluyendo el nombre de la estación.
+plt.title(f'Serie de Tiempo de PM2.5 en la Estación {estacion_ejemplo}')
+# Etiqueta el eje x.
+plt.xlabel('Fecha y Hora')
+# Etiqueta el eje y.
+plt.ylabel('Concentración (µg/m³)')
+# Agrega una cuadrícula al gráfico para mejorar la legibilidad.
+plt.grid(True)
+# Muestra el gráfico.
+plt.show()
+
+# --- Próximos pasos para tu proyecto (comentarios generales) ---
+# - Realizar más análisis exploratorio para otros contaminantes y estaciones.
+# - Investigar patrones diarios, semanales o estacionales.
+# - Comparar diferentes estaciones.
+# - Analizar correlaciones entre contaminantes.
+# - Considerar la normativa local de calidad del aire para comparar los niveles.
+# - Si tienes suficientes datos, podrías intentar un modelado predictivo básico.
+# - Documentar bien tu código y tus hallazgos para tu portafolio.
